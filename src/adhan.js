@@ -18,13 +18,19 @@ function initialise() {
 
         let time = document.createElement("div");
         time.id = salahNames[row] + "-time";
-        time.innerText = salahTimes[row];
+        //time.innerText = salahTimes[row];
         time.classList.add("column");
         document.getElementById("timetable").append(time);
     }
-
     updateCurrentTime();
     setInterval(updateCurrentTime, 1000);
+}
+
+function updateTable() {
+    for(let row=0; row < salahNames.length; row++) {
+        let time = document.getElementById(salahNames[row] + "-time");
+        time.innerText = salahTimes[row];
+    }
 }
 
 function updateCurrentTime() {
@@ -43,31 +49,32 @@ function updateCurrentTime() {
 
 function getTimes() {
     const apiUrl = 'https://api.aladhan.com/v1/calendarByCity/2024/6?city=London&country=United%20Kingdom&method=2';
-    let salahTime;
+    let salahJSONObj;
+    const today = new Date();
+    const formatter = new Intl.DateTimeFormat('en-GB', { dateStyle: 'short' });
+    const formattedDate = formatter.format(today).replace(/\//g, "-");
     
     fetch(apiUrl)
     .then(response => {
         if (!response.ok) {
-        throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok');
         }
         return response.json();
     })
     .then(data => {
-        salahTime = JSON.parse(data); // ToDo: Failing to parse the response, figure out why
+        salahJSONObj = data.data; //JSON.parse(data);
+        //console.log(salahJSONObj);
+        for(let day=0; day < salahJSONObj.length; day++) {
+            let currentDate = salahJSONObj[day].date.gregorian.date;
+            if(currentDate == formattedDate) {
+                for(let index = 0; index < salahTimes.length; index++) {
+                    salahTimes[index] = salahJSONObj[day].timings[salahNames[index]];
+                }
+            }        
+        }
+        updateTable();
     })
     .catch(error => {
         console.error('Error:', error);
-    });
-
-    if(typeof salahTime !== 'undefined') {
-        for(let day=0; day < salahTime.length; day++) {
-            let currentDate = salahTime[day].date.day;
-            if(currentDate = 22) {
-                let rowTime = document.getElementById("Fajr-time");
-                salahTimes[0] = salahTime[day].timings.Fajr;
-                rowTime.innerText = salahTimes[0];
-            }
-    
-        }
-    }    
+    });   
 }
