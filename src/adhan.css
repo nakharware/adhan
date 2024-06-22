@@ -27,3 +27,8 @@ hr {
     justify-content: center;
     align-items: center;
 }
+
+#currentTime {
+    font-size: 30px;
+    font-style: italic;
+}
